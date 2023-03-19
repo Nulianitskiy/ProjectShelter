@@ -3,9 +3,7 @@ import threading
 import os
 import random
 
-
 UDP_MAX_SIZE = 65535
-
 
 COMMANDS = (
     '/members',
@@ -22,6 +20,7 @@ HELP_TEXT = """
 /exit - disconnect from client
 /rsa - create rsa keys
 /help - show this message
+/print - show all keys
 """
 
 my_private_key = [17, 21]
@@ -47,7 +46,7 @@ def listen(s: socket.socket, host: str, port: int):
             if command == 'members':
                 for n, member in enumerate(content.split(';'), start=1):
                     print('\r\r' + f'{n}) {member}' + '\n' + '>: ', end='')
-        
+
         if '||' in msg:
             command, content1, content2 = msg.split('||')
             if command == 'rsa':
@@ -57,7 +56,7 @@ def listen(s: socket.socket, host: str, port: int):
 
         else:
             peer_name = f'client{msg_port}'
-            print('\r\r' + f'{peer_name}: '+ msg + '\n' + f'you: ', end='')
+            print('\r\r' + f'{peer_name}: ' + msg + '\n' + f'you: ', end='')
 
 
 def start_listen(target, socket, host, port):
@@ -73,11 +72,20 @@ def connect(host: str = '127.0.0.1', port: int = 3000):
 
     listen_thread = start_listen(listen, s, host, port)
     allowed_ports = [port]
+
     listen_thread.allowed_ports = allowed_ports
     sendto = (host, port)
+
     s.sendto('__join'.encode('ascii'), sendto)
     while True:
         msg = input(f'>: ')
+
+        # Вот это строка выведет список десятичных кодов для каждого символа в строке
+        decimal_code = [ord(s) for s in msg]
+        print(decimal_code)
+        # Пример:
+        # Hello, world
+        # [72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100]
 
         command = msg.split(' ')[0]
         if command in COMMANDS:
@@ -96,11 +104,11 @@ def connect(host: str = '127.0.0.1', port: int = 3000):
                 allowed_ports.append(peer_port)
                 sendto = (host, peer_port)
                 print(f'Connect to client{peer_port}')
-            
+
             if msg == '/rsa':
                 s.sendto(f'rsa||{my_public_key[0]}||{my_public_key[1]}'.encode('ascii'), sendto)
                 print('Rsa sended')
-            
+
             if msg == '/print':
                 print(f'my_pub_key {my_public_key}\nmy_pr_key{my_private_key}\ncl_pub_key{cl_public_key}')
 
@@ -112,6 +120,6 @@ def connect(host: str = '127.0.0.1', port: int = 3000):
 
 if __name__ == '__main__':
     os.system('clear')
-    print('Welcome to chat!')
+    welcome_message = "Welcome to chat!"
+    print(welcome_message.center(50, "_"))
     connect()
-
