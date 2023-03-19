@@ -20,7 +20,7 @@ def listen(host: str = '127.0.0.1', port: int = 3000):
             continue
 
         client_id = addr[1]
-        msg_text = msg.decode('ascii')
+        msg_text = msg.decode('utf-8')
         if msg_text == '__join':
             print(f'Client {client_id} joined chat')
             continue
@@ -30,7 +30,7 @@ def listen(host: str = '127.0.0.1', port: int = 3000):
             print(f'Client {client_id} requsted members')
             active_members = [f'client{m[1]}' for m in members if m != addr]
             members_msg = ';'.join(active_members)
-            s.sendto(message_template.format('members', members_msg).encode('ascii'), addr)
+            s.sendto(message_template.format('members', members_msg).encode('utf-8'), addr)
             continue
 
 

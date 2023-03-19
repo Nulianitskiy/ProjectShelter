@@ -3,9 +3,6 @@ import random
 class RSA():
     def __init__(self) -> None:
         self.public_key, self.private_key = self.create_keys()
-
-        print(self.public_key)
-        print(self.private_key)
         
 
     def create_keys(self):
@@ -16,7 +13,6 @@ class RSA():
             q = self.random_prime()
 
         n = p*q
-        print(n)
         f = (p-1)*(q-1)
 
         e = self.find_e(f)
@@ -85,6 +81,14 @@ class RSA():
 
         return code
     
+    def encode_by_key(self, key, text):
+        code = []
+        for let in text:
+            l = ord(let)
+            code.append((l**key[0])%key[1])
+
+        return code
+    
     def decode(self, code):
         text = []
         for let in code:
@@ -94,8 +98,8 @@ class RSA():
         return text
     
 
-key = RSA()
+# key = RSA()
 
-word = key.encode("aboba")
-print(word)
-print(key.decode(word))
+# word = key.encode("aboba")
+# print(word)
+# print(key.decode(word))

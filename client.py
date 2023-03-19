@@ -2,6 +2,8 @@ import socket
 import threading
 import os
 import random
+import pickle
+from rsa import RSA
 
 UDP_MAX_SIZE = 65535
 
@@ -24,16 +26,24 @@ HELP_TEXT = """
 """
 
 my_private_key = [17, 21]
-my_public_key = [5, 21]
 
-cl_public_key = []
+cl_public_key = [5, 21]
 
 
 def listen(s: socket.socket, host: str, port: int):
     while True:
         msg, addr = s.recvfrom(UDP_MAX_SIZE)
         msg_port = addr[-1]
-        msg = msg.decode('ascii')
+
+        try:
+            msg = msg.decode('utf-8')
+        except:
+            msg = pickle.loads(msg)
+            msg = keys.decode(msg)
+            msg = ''.join(msg)
+        
+        #print(msg)
+
         allowed_ports = threading.current_thread().allowed_ports
         if msg_port not in allowed_ports:
             continue
@@ -47,9 +57,10 @@ def listen(s: socket.socket, host: str, port: int):
                 for n, member in enumerate(content.split(';'), start=1):
                     print('\r\r' + f'{n}) {member}' + '\n' + '>: ', end='')
 
-        if '||' in msg:
+        elif '||' in msg:
             command, content1, content2 = msg.split('||')
             if command == 'rsa':
+                cl_public_key.clear()
                 cl_public_key.append(int(content1))
                 cl_public_key.append(int(content2))
                 print('Public key got')
@@ -76,21 +87,16 @@ def connect(host: str = '127.0.0.1', port: int = 3000):
     listen_thread.allowed_ports = allowed_ports
     sendto = (host, port)
 
-    s.sendto('__join'.encode('ascii'), sendto)
+    s.sendto('__join'.encode('utf-8'), sendto)
     while True:
         msg = input(f'>: ')
 
-        # Вот это строка выведет список десятичных кодов для каждого символа в строке
-        decimal_code = [ord(s) for s in msg]
-        print(decimal_code)
-        # Пример:
-        # Hello, world
-        # [72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100]
+        
 
         command = msg.split(' ')[0]
         if command in COMMANDS:
             if msg == '/members':
-                s.sendto('__members'.encode('ascii'), sendto)
+                s.sendto('__members'.encode('utf-8'), sendto)
 
             if msg == '/exit':
                 peer_port = sendto[-1]
@@ -106,20 +112,22 @@ def connect(host: str = '127.0.0.1', port: int = 3000):
                 print(f'Connect to client{peer_port}')
 
             if msg == '/rsa':
-                s.sendto(f'rsa||{my_public_key[0]}||{my_public_key[1]}'.encode('ascii'), sendto)
+                s.sendto(f'rsa||{keys.public_key[0]}||{keys.public_key[1]}'.encode('utf-8'), sendto)
                 print('Rsa sended')
 
             if msg == '/print':
-                print(f'my_pub_key {my_public_key}\nmy_pr_key{my_private_key}\ncl_pub_key{cl_public_key}')
+                print(f'my_pub_key {keys.public_key}\nmy_pr_key{keys.private_key}\ncl_pub_key{cl_public_key}')
 
             if msg == '/help':
                 print(HELP_TEXT)
         else:
-            s.sendto(msg.encode('ascii'), sendto)
+            data = bytes(pickle.dumps(keys.encode_by_key(cl_public_key,msg)))
+            s.sendto(data, sendto)
 
 
 if __name__ == '__main__':
     os.system('clear')
     welcome_message = "Welcome to chat!"
     print(welcome_message.center(50, "_"))
+    keys = RSA()
     connect()
