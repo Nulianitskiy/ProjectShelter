@@ -25,8 +25,6 @@ HELP_TEXT = """
 /print - show all keys
 """
 
-my_private_key = [17, 21]
-
 cl_public_key = [5, 21]
 
 

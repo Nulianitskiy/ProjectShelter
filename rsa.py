@@ -16,25 +16,48 @@ class RSA():
         f = (p-1)*(q-1)
 
         e = self.find_e(f)
-        _, x, _ = self.gcdExtended(e,f)
-        d = ((x%e+e)%e)
-
+        d= self.extended_gcd(f,e)
         return [e, n], [d, n] #public, private
     
 
-    def gcdExtended(self,a, b):
-        if a == 0 :
-            return b,0,1
-        gcd,x1,y1 = self.gcdExtended(b%a, a)
-        x = y1 - (b//a) * x1
-        y = x1
-        return gcd,x,y
+    def extended_gcd(self, a, b):
+        if a >= b:
+            r1 = a
+            r2 = b
+        else:
+            r1 = b
+            r2 = a
+
+        n = r1
+
+        q = r1 // r2
+        r = r1 % r2
+
+        t1 = 0
+        t2 = 1
+        t = t1 - (t2*q)
+
+        while r != 0:
+            r1 = r2
+            r2 = r
+            q = r1 // r2
+            r = r1 % r2
+
+            t1 = t2
+            t2 = t
+            t = t1 - (t2*q)
+        
+        if t2 < 0:
+            t2 += n
+            
+        return t2
     
     def find_e(self,f):
         while True:
             e = random.randint(2,f)
             if self.GCD(f,e) == 1:
-                return e
+                if self.mil_rab(e,2):
+                    return e
 
 
     def GCD(self, x, y):
@@ -44,7 +67,7 @@ class RSA():
 
 
     def random_prime(self):
-        n = random.randint(100, 1000)
+        n = random.randint(10, 500)
         while True:
             if self.mil_rab(n,2):
                 return n
@@ -100,6 +123,8 @@ class RSA():
 
 # key = RSA()
 
+# print(key.private_key)
+# print(key.public_key)
 # word = key.encode("aboba")
 # print(word)
 # print(key.decode(word))
